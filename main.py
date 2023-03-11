@@ -3,6 +3,7 @@ from pysat.formula import CNF
 from pysat.solvers import Solver
 from pysat.card import CardEnc
 from utils import Problem, read_problem_grid, try_find_wall
+import sys
 
 
 def _implies(p, q):
@@ -229,7 +230,6 @@ def try_solve_with_assumed_wall(assumed_wall: (int, int)):
 
 def find_solution(problem_instance: Problem):
     pos = try_find_wall(problem_instance)
-    print(pos)
     if pos is not None:
         return try_solve_with_assumed_wall(assumed_wall=pos)
 
@@ -243,23 +243,17 @@ def find_solution(problem_instance: Problem):
 
 
 if __name__ == '__main__':
-    instance = read_problem_grid("instances/1.in")
-    # instance = Problem(8, 10)
-    # instance.add_field(3, 0, 5)
-    # instance.add_field(6, 1, 1)
-    # instance.add_field(0, 3, 4)
-    # instance.add_field(1, 4, 2)
-    # instance.add_field(3, 4, 2)
-    # instance.add_field(7, 4, 2)
-    # instance.add_field(0, 7, 4)
-    # instance.add_field(2, 7, 4)
-    # instance.add_field(4, 8, 9)
-    # instance.add_field(7, 9, 2)
+    path = "instances/1.in"
+    if len(sys.argv) > 1:
+        path = sys.argv[1]
+    instance = read_problem_grid(path)
     print(instance)
     print()
 
     solution = find_solution(problem_instance=instance)
-
-    instance.add_solution(solution)
-    print(instance)
+    if solution is None:
+        print("Unsolvable")
+    else:
+        instance.add_solution(solution)
+        print(instance)
 
