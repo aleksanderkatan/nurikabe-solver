@@ -79,11 +79,13 @@ def read_problem_grid(path):
     with open(path, 'r') as f:
         data = []
         for line in f:
-            data.append(line.strip())
+            line = line.strip()
+            if len(line) == 0:
+                continue
+            data.append(line)
 
         xt = len(data[0])
         yt = len(data)
-        print(xt, yt)
 
         instance = Problem(xt, yt)
         for y, line in enumerate(data):

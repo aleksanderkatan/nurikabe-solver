@@ -247,8 +247,6 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         path = sys.argv[1]
     instance = read_problem_grid(path)
-    print(instance)
-    print()
 
     solution = find_solution(problem_instance=instance)
     if solution is None:
