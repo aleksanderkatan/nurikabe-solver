@@ -2,7 +2,7 @@ from pysat.formula import IDPool
 from pysat.formula import CNF
 from pysat.solvers import Solver
 from pysat.card import CardEnc
-from utils import Problem, read_problem_grid
+from utils import Problem, read_problem_grid, try_find_wall
 
 
 def _implies(p, q):
@@ -218,15 +218,27 @@ class Encoder:
         return walls
 
 
+def try_solve_with_assumed_wall(assumed_wall: (int, int)):
+    encoder = Encoder(instance, assumed_wall)
+    formula = encoder.encode()
+    with Solver(bootstrap_with=formula, name="gluecard4") as solver:
+        if solver.solve():
+            return encoder.decode(solver.get_model())
+    return None
+
+
 def find_solution(problem_instance: Problem):
+    pos = try_find_wall(problem_instance)
+    print(pos)
+    if pos is not None:
+        return try_solve_with_assumed_wall(assumed_wall=pos)
+
     for y in range(problem_instance.x):
         for x in range(problem_instance.y):
-            assumed_wall = (x, y)
-            encoder = Encoder(instance, assumed_wall)
-            formula = encoder.encode()
-            with Solver(bootstrap_with=formula, name="gluecard4") as solver:
-                if solver.solve():
-                    return encoder.decode(solver.get_model())
+            result = try_solve_with_assumed_wall(assumed_wall=(x, y))
+            if result is not None:
+                return result
+
     return None
 
 
