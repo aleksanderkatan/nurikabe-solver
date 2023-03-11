@@ -33,6 +33,20 @@ class Problem:
         return "\n".join(lines)
 
 
+def DFS(visited, x, y, moves_left):
+    if (x, y) in visited:
+        return
+
+    if moves_left == 0:
+        return
+
+    visited.add((x, y))
+
+    # ignore boundaries once again
+    for new_x, new_y in [(x+1, y), (x-1, y), (x, y+1), (x, y-1)]:
+        DFS(visited, new_x, new_y, moves_left-1)
+
+
 def try_find_wall(problem_instance: Problem):
     # neighbour numbers
     tiles_with_neighbours = set()
@@ -45,6 +59,20 @@ def try_find_wall(problem_instance: Problem):
                 if pos in tiles_with_neighbours:
                     return pos
                 tiles_with_neighbours.add(pos)
+
+    # unreachable tiles
+    visited = set()
+    for y in range(problem_instance.y):
+        for x in range(problem_instance.x):
+            # we can ignore tiles outside boundary
+            if problem_instance.fields[x][y] is None:
+                continue
+            DFS(visited, x, y, problem_instance.fields[x][y])
+    for y in range(problem_instance.y):
+        for x in range(problem_instance.x):
+            if (x, y) not in visited:
+                return x, y
+
     return None
 
 
