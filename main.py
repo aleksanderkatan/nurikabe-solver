@@ -2,37 +2,7 @@ from pysat.formula import IDPool
 from pysat.formula import CNF
 from pysat.solvers import Solver
 from pysat.card import CardEnc
-
-
-class Problem:
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-        self.fields = [[None for _ in range(y)] for _ in range(x)]
-        self.solution = None
-
-    def add_field(self, x, y, value):
-        self.fields[x][y] = value
-
-    def add_solution(self, solution: list[list[bool]]):
-        self.solution = solution
-
-    def __str__(self):
-        lines = []
-        for y in range(self.y):
-            line = ""
-            for x in range(self.x):
-                elem = self.fields[x][y]
-                if elem is not None:
-                    line += str(elem)
-                elif self.solution is not None:
-                    if self.solution[x][y] and self.fields[x][y] is not None:
-                        raise RuntimeError("Wall at a number!")
-                    line += "x" if self.solution[x][y] else "."
-                else:
-                    line += "."
-            lines.append(line)
-        return "\n".join(lines)
+from utils import Problem, read_problem_grid
 
 
 def _implies(p, q):
@@ -248,36 +218,35 @@ class Encoder:
         return walls
 
 
+def find_solution(problem_instance: Problem):
+    for y in range(problem_instance.x):
+        for x in range(problem_instance.y):
+            assumed_wall = (x, y)
+            encoder = Encoder(instance, assumed_wall)
+            formula = encoder.encode()
+            with Solver(bootstrap_with=formula, name="gluecard4") as solver:
+                if solver.solve():
+                    return encoder.decode(solver.get_model())
+    return None
 
 
 if __name__ == '__main__':
-    instance = Problem(8, 10)
-    instance.add_field(3, 0, 5)
-    instance.add_field(6, 1, 1)
-    instance.add_field(0, 3, 4)
-    instance.add_field(1, 4, 2)
-    instance.add_field(3, 4, 2)
-    instance.add_field(7, 4, 2)
-    instance.add_field(0, 7, 4)
-    instance.add_field(2, 7, 4)
-    instance.add_field(4, 8, 9)
-    instance.add_field(7, 9, 2)
-    # instance = Problem(5, 2)
-    # instance.add_field(0, 0, 4)
-    # instance.add_field(3, 0, 4)
+    instance = read_problem_grid("instances/1.in")
+    # instance = Problem(8, 10)
+    # instance.add_field(3, 0, 5)
+    # instance.add_field(6, 1, 1)
+    # instance.add_field(0, 3, 4)
+    # instance.add_field(1, 4, 2)
+    # instance.add_field(3, 4, 2)
+    # instance.add_field(7, 4, 2)
+    # instance.add_field(0, 7, 4)
+    # instance.add_field(2, 7, 4)
+    # instance.add_field(4, 8, 9)
+    # instance.add_field(7, 9, 2)
     print(instance)
     print()
 
-    # encoder = Encoder(instance, (2, 4))
-    encoder = Encoder(instance, (2, 0))
-    formula = encoder.encode()
-    formula_solution = None
-    with Solver(bootstrap_with=formula, name="gluecard4") as solver:
-        if solver.solve():
-            formula_solution = solver.get_model()
-        else:
-            raise RuntimeError("No solution!")
-    solution = encoder.decode(formula_solution)
+    solution = find_solution(problem_instance=instance)
 
     instance.add_solution(solution)
     print(instance)
